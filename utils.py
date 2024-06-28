@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 
-
 def plot_stats(rewards, cumulative_rewards, balances, total_wins, total_losses, player_values, dealer_values, actions_taken, bet_amounts, episodes, env):
     plt.figure(figsize=(20, 10))
 

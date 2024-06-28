@@ -2,11 +2,10 @@ from dqn_agent import DQNAgent
 from blackjack_env import BlackjackEnv
 from utils import plot_stats
 
-
 def train_dqn(episodes, model_path=None):
     env = BlackjackEnv()
     agent = DQNAgent(env)
-    batch_size = 64  # Increased batch size for more stable updates
+    batch_size = 64
     rewards = []
     cumulative_rewards = []
     total_reward = 0
@@ -16,7 +15,7 @@ def train_dqn(episodes, model_path=None):
     player_values = []
     dealer_values = []
     actions_taken = []
-    bet_amounts = []  # Reset bet amounts list
+    bet_amounts = []
 
     if model_path:
         agent.load(model_path)
@@ -33,7 +32,7 @@ def train_dqn(episodes, model_path=None):
             player_values.append(info.get('player_value', 0))
             dealer_values.append(info.get('dealer_value', 0))
             actions_taken.append(action)
-            bet_amounts.append(info.get('bet_amount', 0))  # Append bet amount
+            bet_amounts.append(info.get('bet_amount', 0))
             if done:
                 break
         total_reward += episode_reward
@@ -55,12 +54,11 @@ def train_dqn(episodes, model_path=None):
             print(f"Episode: {e}, Reward: {rewards[-1]:.2f}, Balance: {balances[-1]:.2f}, Wins: {total_wins},"
                   f" Losses: {total_losses}, winrate: {total_wins / (total_wins + total_losses):.2f}, bet_amount: {bet_amounts[-1]},"
                   f" , player_value: {player_values[-1]}, dealer_value: {dealer_values[-1]}")
-            # Print all player cards and dealer upcard
             print(f"Player Cards: {[card.__str__() for card in env.game.player.hand]}")
             print(f"Dealer Upcard:{[card.__str__() for card in env.game.dealer.hand]}")
             print('--------------------------------------------------')
 
-    agent.save("final_model.pth")  # Save the final model only once
+    agent.save("final_model.pth")
     plot_stats(rewards, cumulative_rewards, balances, total_wins, total_losses, player_values, dealer_values, actions_taken, bet_amounts, episodes, env)
 
 

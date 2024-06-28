@@ -3,7 +3,6 @@ from gym import spaces
 import numpy as np
 from game_logic import Game
 
-
 class BlackjackEnv(gym.Env):
     def __init__(self):
         super(BlackjackEnv, self).__init__()
@@ -28,6 +27,11 @@ class BlackjackEnv(gym.Env):
             self.game.player_action('hit')
             player_value = self.game.get_hand_value(self.game.player.hand)
             reward += self._hit_reward(player_value)
+            if player_value > 21:  # Check for bust
+                done = True
+                reward -= 1.0  # Penalty for busting
+            elif player_value >= 20:  # Penalty for hitting with 20 or more
+                reward -= 0.5
         elif action == 2:  # Double
             if self.game.player.can_double_down():
                 self.game.player.double_down()
@@ -35,6 +39,8 @@ class BlackjackEnv(gym.Env):
                 player_value = self.game.get_hand_value(self.game.player.hand)
                 done = True
                 reward += self._double_reward(player_value)
+                if player_value > 21:  # Check for bust after doubling
+                    reward -= 2.0  # Heavier penalty for busting after doubling down
         elif action == 3:  # Bet
             bet_amount = self.game.player.money * np.random.uniform(0.01, 0.05)  # Random bet between 1% and 5%
             bet_amount = min(bet_amount, 500)  # Ensure max bet is 500
@@ -46,7 +52,7 @@ class BlackjackEnv(gym.Env):
             winner = self.game.check_winner()
             reward += self._calculate_reward(winner, player_value, dealer_upcard_value)
             if winner == 'player':
-                reward += 2 * self.game.player.current_bet  # Double the bet amount as a reward for winning
+                reward += 10  # Cap the reward for winning
                 self.game.player.money += 2 * self.game.player.current_bet  # Update balance with winnings
             elif winner == 'dealer':
                 reward -= self.game.player.current_bet  # Deduct the bet amount as a penalty for losing
@@ -84,10 +90,10 @@ class BlackjackEnv(gym.Env):
             reward += 0.5  # Reward for hitting exactly 21
         elif player_value > 21:
             reward -= 1.0  # Penalty for busting
-        if player_value > 11 and player_value <= 20:
+        if 11 < player_value <= 20:
             reward += 0.1  # Reward for having a strong hand after hitting
         if player_value >= 18:
-            reward -= 0.5  # Penalty for hitting with 18 or more
+            reward -= 10  # Penalty for hitting with 18 or more
         return reward
 
     def _double_reward(self, player_value):
@@ -102,8 +108,10 @@ class BlackjackEnv(gym.Env):
 
     def _calculate_reward(self, winner, player_value, dealer_upcard_value):
         reward = 0
+        bet_amount = self.game.player.current_bet
         if winner == 'player':
-            reward += 1.0
+            reward += 10  # Cap the reward for winning
+            reward += min(bet_amount * 0.1, 20)  # Proportional reward based on bet, capped at 10
         elif winner == 'dealer':
             # Adjust penalty based on how close the player was to 21
             if player_value > 21:
