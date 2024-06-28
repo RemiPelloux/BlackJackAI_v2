@@ -49,7 +49,7 @@ def train_dqn(episodes, model_path=None):
         if len(agent.memory) > batch_size:
             agent.replay(batch_size)
 
-        if e % 1 == 0 and e > 0:
+        if e % 100 == 0 and e > 0:
             print('--------------------------------------------------')
             print(f"Episode: {e}, Reward: {rewards[-1]:.2f}, Balance: {balances[-1]:.2f}, Wins: {total_wins},"
                   f" Losses: {total_losses}, winrate: {total_wins / (total_wins + total_losses):.2f}, bet_amount: {bet_amounts[-1]},"
@@ -63,6 +63,6 @@ def train_dqn(episodes, model_path=None):
 
 
 if __name__ == "__main__":
-    episodes = 200
+    episodes = 1000
     model_path = "final_model.pth"
     train_dqn(episodes, model_path)
